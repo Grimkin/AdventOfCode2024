@@ -1,0 +1,7 @@
+﻿# CMakeList.txt : CMake project for AdventOfCode2024, include source and define
+# project specific logic here.
+#
+
+# Add source to this project's executable.
+add_executable (AdventOfCode2024 "main.cpp"  "source/Day1.cpp" "Challenges.h")
+
