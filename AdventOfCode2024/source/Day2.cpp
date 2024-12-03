@@ -75,8 +75,8 @@ void executeDay2()
 {
     std::ifstream file( "input/Day2.txt" );
     auto reports = Day2::loadInput( file );
-    std::println( "Number of safe reports: {}", Day2::getNumberOfSafeReports( reports ) );
-    std::println( "Number of safe reports: {}", Day2::getNumberOfSafeReportsWithRemove( reports ) );
+    std::println( "Day2: Number of safe reports: {}", Day2::getNumberOfSafeReports( reports ) );
+    std::println( "Day2: Number of safe reports: {}", Day2::getNumberOfSafeReportsWithRemove( reports ) );
 
     return;
 }

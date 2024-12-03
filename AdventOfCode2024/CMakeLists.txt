@@ -3,5 +3,5 @@
 #
 
 # Add source to this project's executable.
-add_executable (AdventOfCode2024 "main.cpp"  "source/Day1.cpp" "Challenges.h" "source/Day2.cpp")
+add_executable (AdventOfCode2024 "main.cpp"  "source/Day1.cpp" "Challenges.h" "source/Day2.cpp" "source/Day3.cpp")
 
