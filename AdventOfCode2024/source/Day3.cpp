@@ -10,38 +10,25 @@
 
 namespace Day3
 {
-    struct Instruction
+    struct Multiplication
     {
         int64_t left;
         int64_t right;
-        size_t position;
     };
 
-    struct Data
+    struct Do
+    {};
+
+    struct Dont
+    {};
+
+    using Instruction = std::variant<Multiplication, Do, Dont>;
+
+    std::vector<Instruction> loadInput( std::istream& stream )
     {
         std::vector<Instruction> instructions;
-        std::vector<size_t> doPositions;
-        std::vector<size_t> dontPositions;
-    };
 
-    std::vector<size_t> findAllLocations( const std::string& string, std::string_view value )
-    {
-        std::vector<size_t> positions;
-        size_t offset = 0;
-        while( offset < string.size() )
-        {
-            offset = string.find( value, offset );
-            if( offset != std::string::npos )
-                positions.push_back( offset++ );
-        }
-        return positions;
-    }
-
-    Data loadInput( std::istream& stream )
-    {
-        Data data;
-
-        static std::regex regexMul( R"(mul\((\d*),(\d*)\))" );
+        static std::regex regexMul( R"((mul)\((\d*),(\d*)\)|(do\(\))|(don't\(\)))" );
 
         std::stringstream buffer;
         buffer << stream.rdbuf();
@@ -53,43 +40,48 @@ namespace Day3
         for( std::sregex_iterator i = mul_begin; i != mul_end; ++i )
         {
             std::smatch match = *i;
-            data.instructions.push_back( { std::stoll( match[ 1 ] ), std::stoll( match[ 2 ] ), size_t( match.position() ) });
+            if( match[ 1 ].matched )
+                instructions.push_back( Multiplication{ std::stoll( match[ 2 ] ), std::stoll( match[ 3 ] ) } );
+            else if( match[ 4 ].matched )
+                instructions.push_back( Do{} );
+            else if( match[ 5 ].matched )
+                instructions.push_back( Dont{} );
         }
 
-        data.doPositions = findAllLocations( line, "do()" );
-        data.dontPositions = findAllLocations( line, "don't()" );
+        return instructions;
+    }
 
-        return data;
+    int64_t getValue( const Instruction& instruction )
+    {
+        if( auto multiplication = std::get_if<Multiplication>( &instruction ))
+            return multiplication->left * multiplication->right;
+        return 0;
     }
 
     int64_t getSumOfInstructions( const auto& instructions )
     {
         return std::ranges::fold_left(
-            instructions | std::views::transform( []( auto v ) { return v.left * v.right; } ),
+            instructions | std::views::transform( getValue ),
             0ll, std::plus{} );
     }
 
-    int64_t getSumOfFilteredInstructions( const Data& data )
+    template<typename ... Callable>
+    struct visitor : Callable... {
+        using Callable::operator()...;
+    };
+
+    int64_t getSumOfFilteredInstructions( const std::vector<Instruction>& instructions )
     {
         int64_t sum = 0;
-        size_t i = 0;
-        size_t dontIdx = 0;
-        size_t doIdx = 0;
+        bool active = true;
 
-        while( i < data.instructions.size() )
+        for( auto& instruction : instructions )
         {
-            for(; data.instructions[ i ].position < data.dontPositions[ dontIdx ]; i++ )
-                sum += data.instructions[ i ].left * data.instructions[ i ].right;
-
-            while( data.doPositions[ doIdx ] < data.dontPositions[ dontIdx ] )
-                if( ++doIdx >= data.doPositions.size() )
-                    return sum;
-
-            for( ; data.instructions[ i ].position < data.doPositions[ doIdx ]; i++ );
-
-            while( data.doPositions[ doIdx ] > data.dontPositions[ dontIdx ] )
-                if( ++dontIdx >= data.dontPositions.size() )
-                    return sum + getSumOfInstructions( std::ranges::subrange( data.instructions.begin() + i, data.instructions.end() ) );
+            std::visit( visitor{
+                [ & ]( const Multiplication& multiplication ) { sum += active ? multiplication.left * multiplication.right : 0; },
+                [ & ]( const Do& ) { active = true; },
+                [ & ]( const Dont& ) { active = false; }
+            }, instruction );
         }
 
         return sum;
@@ -99,8 +91,8 @@ namespace Day3
 void executeDay3()
 {
     std::ifstream file( "input/Day3.txt" );
-    auto data = Day3::loadInput( file );
-    std::println( "Day3: Sum of instructions: {}", Day3::getSumOfInstructions( data.instructions ) );
-    std::println( "Day3: Sum of filtered instructions: {}", Day3::getSumOfFilteredInstructions( data ) );
+    auto instructions = Day3::loadInput( file );
+    std::println( "Day3: Sum of instructions: {}", Day3::getSumOfInstructions( instructions ) );
+    std::println( "Day3: Sum of filtered instructions: {}", Day3::getSumOfFilteredInstructions( instructions ) );
     return;
 }
