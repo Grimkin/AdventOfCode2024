@@ -1,7 +1,7 @@
 ﻿#include "Challenges.h"
 
-int main()
+int main(int argc, char**argv)
 {
-    executeDay1();
+    executeDay2();
     return 0;
 }
