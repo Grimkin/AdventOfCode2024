@@ -2,6 +2,6 @@
 
 int main(int argc, char**argv)
 {
-    executeDay3();
+    executeDay4();
     return 0;
 }
