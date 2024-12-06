@@ -96,16 +96,19 @@ namespace Day6
         return position.x >= 0 && position.y >= 0 && position.x < mapSize.x && position.y < mapSize.y;
     }
 
-    int64_t getNumVisitedPositions( const MapData& mapData )
+    auto getVisitedPositions( const MapData& mapData )
     {
         std::set<Vec2> visitedPositions{ mapData.startPosition };
-
         auto direction( Direction::Up );
         auto position( mapData.startPosition );
         while( moveOrTurn( position, direction, mapData.obstacles, mapData.size ) )
             visitedPositions.insert( position );
+        return visitedPositions;
+    }
 
-        return visitedPositions.size();
+    int64_t getNumVisitedPositions( const MapData& mapData )
+    {
+        return getVisitedPositions( mapData ).size();
     }
 
     bool isLoop( const MapData& mapData )
@@ -126,22 +129,17 @@ namespace Day6
 
     int64_t getNumPossibleLoops( const MapData& mapData )
     {
-        int64_t numLoops = 0;
-        for( int64_t y = 0; y < mapData.size.y; y++ )
-        {
-            std::println( "Y: {}", y );
-            for( int64_t x = 0; x < mapData.size.x; x++ )
-            {
-                if( mapData.startPosition == Vec2{ x, y } || mapData.obstacles.count( { x, y } ) > 0 )
-                    continue;
+        auto pathPositions = getVisitedPositions( mapData );
+        pathPositions.erase( mapData.startPosition );
 
+        auto createsLoop = 
+            [ & ]( const Vec2& position ) {
                 MapData testMapData{ mapData };
-                testMapData.obstacles.insert( { x, y } );
-                if( isLoop( testMapData ) )
-                    numLoops++;
-            }
-        }
-        return numLoops;
+                testMapData.obstacles.insert( position );
+                return Day6::isLoop( testMapData );
+            };
+
+        return std::ranges::count_if( pathPositions, createsLoop );
     }
 }
 
