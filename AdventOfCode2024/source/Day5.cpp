@@ -100,15 +100,6 @@ namespace Day5
         return *std::next( res.begin(), res.size() / 2 );
     }
 
-    bool isInVec( const std::vector<int64_t>& vec, int64_t val )
-    {
-        for( size_t j = 0; j < vec.size(); j++ )
-        {
-            if( vec[ j ] == val )
-                return true;
-        }
-        return false;
-    }
     int64_t getSumOfUpdatedInvalidUpdates( const PageMap& pagemap )
     {
         auto orderMap = getOrderMap( pagemap.ordering );
